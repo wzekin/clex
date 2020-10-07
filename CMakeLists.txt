@@ -26,6 +26,7 @@ include(ConfigSafeGuards)
 include(Colors)
 include(CTest)
 include(Doctest)
+include(HatTrie)
 include(Documentation)
 include(LTO)
 include(Misc)
@@ -38,7 +39,9 @@ find_lto(CXX)
 #                         Locate files (change as needed).
 # --------------------------------------------------------------------------------
 set(SOURCES          # All .cpp files in src/
-    src/example.cpp
+    src/reader.cpp
+    src/type.cpp
+    src/lex.cpp
 )
 set(TESTFILES        # All .cpp files in tests/
     tests/main.cpp
@@ -56,6 +59,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 # There's also (probably) doctests within the library, so we need to see this as well.
 target_link_libraries(${LIBRARY_NAME} PUBLIC doctest)
+target_link_libraries(${LIBRARY_NAME} PUBLIC hat-trie)
 
 # Set the compile options you want (change as needed).
 target_set_warnings(${LIBRARY_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)

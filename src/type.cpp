@@ -1,17 +1,21 @@
 #include "type.h"
 #include <string>
 
-Token::Token(OpType op_type) : token_type(TokenType::OP) {
+Token::Token(OpType op_type, Position pos)
+    : token_type(TokenType::OP), p_token(pos) {
   token_value.op_type = op_type;
 }
 
-Token::Token(ReservedWordType reserved_word)
-    : token_type(TokenType::ReservedWord) {
+Token::Token(ReservedWordType reserved_word, Position pos)
+    : token_type(TokenType::ReservedWord), p_token(pos) {
+
   token_value.reserved_word = reserved_word;
 }
 
-Token::Token(char *data, bool is_number)
-    : token_type(is_number ? TokenType::Number : TokenType::Ident) {
+Token::Token(char *data, bool is_number, Position pos)
+    : token_type(is_number ? TokenType::Number : TokenType::Ident),
+      p_token(pos) {
+
   token_value.data = data;
 }
 

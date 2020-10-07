@@ -1,4 +1,5 @@
 #pragma once
+#include "reader.h"
 #include <iostream>
 #include <string>
 
@@ -77,9 +78,9 @@ std::ostream &operator<<(std::ostream &out, const ReservedWordType value);
 
 class Token {
 public:
-  Token(OpType op_type);
-  Token(ReservedWordType reserved_word);
-  Token(char *data, bool is_number);
+  Token(OpType op_type, Position pos);
+  Token(ReservedWordType reserved_word, Position pos);
+  Token(char *data, bool is_number, Position pos);
 
   bool is_op() const;
   bool is_reserved_word() const;
@@ -101,6 +102,8 @@ public:
     } else if (t.is_number()) {
       out << "<NUMBER>\t" << t.as_number();
     }
+    out << "\tLoc=<" << t.p_token.row << ":" << t.p_token.col << ">";
+
     return out;
   }
 
@@ -121,4 +124,6 @@ private:
   TokenType token_type;
 
   TokenValue token_value;
+
+  Position p_token;
 };

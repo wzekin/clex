@@ -1,6 +1,8 @@
 #pragma once
 #include "reader.h"
 #include <iostream>
+#include <plog/Initializers/RollingFileInitializer.h>
+#include <plog/Log.h>
 #include <string>
 
 enum class OpType {
@@ -53,7 +55,6 @@ enum class OpType {
   L_PAREN,
   R_PAREN,
 };
-std::ostream &operator<<(std::ostream &out, const OpType value);
 
 enum class ReservedWordType {
   CHAR,
@@ -74,7 +75,6 @@ enum class ReservedWordType {
   VOID,
   STRUCT,
 };
-std::ostream &operator<<(std::ostream &out, const ReservedWordType value);
 
 class Token {
 public:
@@ -92,20 +92,7 @@ public:
   char *as_ident() const;
   char *as_number() const;
 
-  friend std::ostream &operator<<(std::ostream &out, Token &t) {
-    if (t.is_op()) {
-      out << "<OP>\t" << t.as_op();
-    } else if (t.is_reserved_word()) {
-      out << "<RESERVED>\t" << t.as_reserved_word();
-    } else if (t.is_ident()) {
-      out << "<IDNET>\t" << t.as_ident();
-    } else if (t.is_number()) {
-      out << "<NUMBER>\t" << t.as_number();
-    }
-    out << "\tLoc=<" << t.p_token.row << ":" << t.p_token.col << ">";
-
-    return out;
-  }
+  Position p_token;
 
 private:
   enum class TokenType {
@@ -124,6 +111,10 @@ private:
   TokenType token_type;
 
   TokenValue token_value;
-
-  Position p_token;
 };
+
+namespace plog {
+Record &operator<<(Record &record, const OpType &o);
+Record &operator<<(Record &record, const ReservedWordType &r);
+Record &operator<<(Record &record, const Token &t);
+} // namespace plog

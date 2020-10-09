@@ -27,6 +27,7 @@ include(Colors)
 include(CTest)
 include(Doctest)
 include(HatTrie)
+include(GLog)
 include(Documentation)
 include(LTO)
 include(Misc)
@@ -60,6 +61,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 # There's also (probably) doctests within the library, so we need to see this as well.
 target_link_libraries(${LIBRARY_NAME} PUBLIC doctest)
 target_link_libraries(${LIBRARY_NAME} PUBLIC hat-trie)
+target_link_libraries(${LIBRARY_NAME} PUBLIC glog)
 
 # Set the compile options you want (change as needed).
 target_set_warnings(${LIBRARY_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)

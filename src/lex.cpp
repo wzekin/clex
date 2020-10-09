@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <plog/Log.h>
 #include <regex>
 #include <string>
 
@@ -338,14 +339,9 @@ void Lex::parse() {
       if (this->reader->peek() == '\0' && this->reader->is_eof()) {
         return;
       }
+      PLOGI << this->tokens[this->tokens.size() - 1];
+      // spdlog::info("{}", this->tokens[this->tokens.size() - 1]);
     }
     }
-  }
-}
-
-void Lex::print() {
-  std::cout << this->tokens.size() << std::endl;
-  for (auto a : this->tokens) {
-    std::cout << a << std::endl;
   }
 }

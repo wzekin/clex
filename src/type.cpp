@@ -2,19 +2,19 @@
 #include <string>
 
 Token::Token(OpType op_type, Position pos)
-    : token_type(TokenType::OP), p_token(pos) {
+    : p_token(pos), token_type(TokenType::OP) {
   token_value.op_type = op_type;
 }
 
 Token::Token(ReservedWordType reserved_word, Position pos)
-    : token_type(TokenType::ReservedWord), p_token(pos) {
+    : p_token(pos), token_type(TokenType::ReservedWord) {
 
   token_value.reserved_word = reserved_word;
 }
 
 Token::Token(char *data, bool is_number, Position pos)
-    : token_type(is_number ? TokenType::Number : TokenType::Ident),
-      p_token(pos) {
+    : p_token(pos),
+      token_type(is_number ? TokenType::Number : TokenType::Ident) {
 
   token_value.data = data;
 }
@@ -57,13 +57,14 @@ char *Token::as_number() const {
   return this->token_value.data;
 }
 
-std::ostream &operator<<(std::ostream &out, const OpType value) {
+namespace plog {
+Record &operator<<(Record &record, const OpType &o) {
   const char *s = 0;
 #define PROCESS_VAL(p, name)                                                   \
   case (p):                                                                    \
     s = name;                                                                  \
     break;
-  switch (value) {
+  switch (o) {
     PROCESS_VAL(OpType::ASSIGN, "ASSIGN '='");
     PROCESS_VAL(OpType::ADD, "ADD '+'");
     PROCESS_VAL(OpType::INC, "INC '++'");
@@ -114,16 +115,16 @@ std::ostream &operator<<(std::ostream &out, const OpType value) {
     PROCESS_VAL(OpType::R_PAREN, "R_PAREN ')'");
   }
 #undef PROCESS_VAL
-  return out << s;
+  return record << s;
 }
 
-std::ostream &operator<<(std::ostream &out, const ReservedWordType value) {
+Record &operator<<(Record &record, const ReservedWordType &r) {
   const char *s = 0;
 #define PROCESS_VAL(p, name)                                                   \
   case (p):                                                                    \
     s = name;                                                                  \
     break;
-  switch (value) {
+  switch (r) {
     PROCESS_VAL(ReservedWordType::CHAR, "char");
     PROCESS_VAL(ReservedWordType::UNSIGNED, "unsigned");
     PROCESS_VAL(ReservedWordType::UNION, "union");
@@ -144,5 +145,21 @@ std::ostream &operator<<(std::ostream &out, const ReservedWordType value) {
   }
 #undef PROCESS_VAL
 
-  return out << s;
+  return record << s;
 }
+
+Record &operator<<(Record &record, const Token &t) {
+  if (t.is_op()) {
+    record << "<OP>\t" << t.as_op();
+  } else if (t.is_reserved_word()) {
+    record << "<RESERVED>\t" << t.as_reserved_word();
+  } else if (t.is_ident()) {
+    record << "<IDNET>\t" << t.as_ident();
+  } else if (t.is_number()) {
+    record << "<NUMBER>\t" << t.as_number();
+  }
+  record << "\tLoc=<" << t.p_token.row << ":" << t.p_token.col << ">";
+
+  return record;
+}
+} // namespace plog

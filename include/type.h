@@ -78,30 +78,36 @@ enum class ReservedWordType {
 
 class Token {
 public:
-  Token(OpType op_type, Position pos);
-  Token(ReservedWordType reserved_word, Position pos);
-  Token(char *data, bool is_number, Position pos);
-
-  bool is_op() const;
-  bool is_reserved_word() const;
-  bool is_ident() const;
-  bool is_number() const;
-
-  OpType as_op() const;
-  ReservedWordType as_reserved_word() const;
-  char *as_ident() const;
-  char *as_number() const;
-
-  Position p_token;
-
-private:
   enum class TokenType {
     OP,
     ReservedWord,
     Ident,
     Number,
+    String,
+    Char,
   };
 
+  Token(OpType op_type, Position pos);
+  Token(ReservedWordType reserved_word, Position pos);
+  Token(char *data, Token::TokenType type, Position pos);
+
+  bool is_op() const;
+  bool is_reserved_word() const;
+  bool is_ident() const;
+  bool is_number() const;
+  bool is_string() const;
+  bool is_char() const;
+
+  OpType as_op() const;
+  ReservedWordType as_reserved_word() const;
+  char *as_ident() const;
+  char *as_number() const;
+  char *as_string() const;
+  char *as_char() const;
+
+  Position p_token;
+
+private:
   union TokenValue {
     OpType op_type;
     ReservedWordType reserved_word;

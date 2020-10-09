@@ -41,6 +41,10 @@ private:
 
   void parse_number();
 
+  void parse_string();
+
+  void parse_char();
+
   void parse_macro_or_line_comment();
 
   void parse_block_comment();

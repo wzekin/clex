@@ -12,10 +12,8 @@ Token::Token(ReservedWordType reserved_word, Position pos)
   token_value.reserved_word = reserved_word;
 }
 
-Token::Token(char *data, bool is_number, Position pos)
-    : p_token(pos),
-      token_type(is_number ? TokenType::Number : TokenType::Ident) {
-
+Token::Token(char *data, Token::TokenType type, Position pos)
+    : p_token(pos), token_type(type) {
   token_value.data = data;
 }
 
@@ -28,6 +26,10 @@ bool Token::is_reserved_word() const {
 bool Token::is_ident() const { return this->token_type == TokenType::Ident; }
 
 bool Token::is_number() const { return this->token_type == TokenType::Number; }
+
+bool Token::is_string() const { return this->token_type == TokenType::String; }
+
+bool Token::is_char() const { return this->token_type == TokenType::Char; }
 
 OpType Token::as_op() const {
   if (!this->is_op()) {
@@ -53,6 +55,20 @@ char *Token::as_ident() const {
 char *Token::as_number() const {
   if (!this->is_number()) {
     throw "the token is not number";
+  }
+  return this->token_value.data;
+}
+
+char *Token::as_string() const {
+  if (!this->is_string()) {
+    throw "the token is not string";
+  }
+  return this->token_value.data;
+}
+
+char *Token::as_char() const {
+  if (!this->is_char()) {
+    throw "the token is not char";
   }
   return this->token_value.data;
 }
@@ -157,6 +173,10 @@ Record &operator<<(Record &record, const Token &t) {
     record << "<IDNET>\t" << t.as_ident();
   } else if (t.is_number()) {
     record << "<NUMBER>\t" << t.as_number();
+  } else if (t.is_string()) {
+    record << "<STRING>\t" << t.as_string();
+  } else if (t.is_char()) {
+    record << "<CHAR>\t" << t.as_char();
   }
   record << "\tLoc=<" << t.p_token.row << ":" << t.p_token.col << ">";
 

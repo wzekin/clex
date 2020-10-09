@@ -14,6 +14,10 @@ static inline bool is_ident_byte(const char c) {
   return std::isalnum(c) || c == '_';
 }
 
+static inline bool is_num_byte(const char c) {
+  return std::isalnum(c) || c == '_' || c == '.';
+}
+
 void Lex::parse_ident() {
   size_t index = 0;
   char *token = (char *)malloc(sizeof(char) * 50);
@@ -27,7 +31,8 @@ void Lex::parse_ident() {
   if (res != reserved_word.end()) {
     this->tokens.push_back(Token(res.value(), this->reader->pos()));
   } else {
-    this->tokens.push_back(Token(token, false, this->reader->pos()));
+    this->tokens.push_back(
+        Token(token, Token::TokenType::Ident, this->reader->pos()));
   }
   this->reader->ahead();
 }
@@ -37,7 +42,7 @@ void Lex::parse_number() {
   char *token = (char *)malloc(sizeof(char) * 50);
   memset(token, 0, 50);
   token[index++] = this->reader->peek();
-  while (is_ident_byte(this->reader->front_peek())) {
+  while (is_num_byte(this->reader->front_peek())) {
     token[index++] = this->reader->front_peek();
     this->reader->front_ahead();
   }
@@ -53,11 +58,15 @@ void Lex::parse_number() {
   //     ")"
   //     "(ul|lu|l|u)?$"
 
-  // std::regex
-  // re("^(\-|\+)?(0|((\d*.\d+)|(\d+.\d*))(e(\+|\-)?\d+)?|[1-9]\d*|0[1-"
-  //               "7][0-7]*|0x[1-9a-f][0-9a-f]*|0x([1-9a-f][0-9a-f]*.[0-9a-f]*|["
-  //               "0-9a-f]*.[1-9a-f][0-9a-f]*)p(\+|\-)?[0-9a-f]+)(ul|lu|l|u)?$");
-  this->tokens.push_back(Token(token, true, this->reader->pos()));
+  std::regex re(
+      "^(\\-|\\+)?(0|((\\d*.\\d+)|(\\d+.\\d*))(e(\\+|\\-)?\\d+)?|[1-9]\\d*|0[1-"
+      "7][0-7]*|0x[1-9a-f][0-9a-f]*|0x([1-9a-f][0-9a-f]*.[0-9a-f]*|["
+      "0-9a-f]*.[1-9a-f][0-9a-f]*)p(\\+|\\-)?[0-9a-f]+)(ul|lu|l|u)?$");
+  if (!std::regex_match(token, re)) {
+    PLOGW << "the number " << token << " is not correct";
+  }
+  this->tokens.push_back(
+      Token(token, Token::TokenType::Number, this->reader->pos()));
   this->reader->ahead();
   return;
 }
@@ -81,6 +90,63 @@ void Lex::parse_block_comment() {
     }
     this->reader->front_ahead();
   }
+  this->reader->ahead();
+}
+
+void Lex::parse_string() {
+  size_t index = 0;
+  char *token = (char *)malloc(sizeof(char) * 50);
+  memset(token, 0, 50);
+  token[index++] = this->reader->peek();
+  int stat = 0;
+  while (stat != 2) {
+    if (this->reader->front_peek() == '\n') {
+      PLOGW << "the string " << token << " is not correct";
+      this->reader->front_ahead();
+      break;
+    }
+    if (stat == 0 && this->reader->front_peek() == '\\') {
+      stat = 1;
+    } else if (stat != 1 && this->reader->front_peek() == '"') {
+      stat = 2;
+    } else {
+      stat = 0;
+    }
+    token[index++] = this->reader->front_peek();
+    this->reader->front_ahead();
+  }
+  this->tokens.push_back(
+      Token(token, Token::TokenType::String, this->reader->pos()));
+  this->reader->ahead();
+}
+
+void Lex::parse_char() {
+  size_t index = 0;
+  char *token = (char *)malloc(sizeof(char) * 50);
+  memset(token, 0, 50);
+  token[index++] = this->reader->peek();
+  int stat = 0;
+  while (stat != 2) {
+    if (this->reader->front_peek() == '\n') {
+      PLOGW << "the char" << token << " is not correct";
+      break;
+    }
+    if (stat == 0 && this->reader->front_peek() == '\\') {
+      stat = 1;
+    } else if (stat != 1 && this->reader->front_peek() == '\'') {
+      stat = 2;
+    } else {
+      stat = 0;
+    }
+    token[index++] = this->reader->front_peek();
+    this->reader->front_ahead();
+  }
+  if (!(std::strlen(token) == 4 && token[1] == '\\') &&
+      std::strlen(token) != 3) {
+    PLOGW << "the char" << token << " has not right length";
+  }
+  this->tokens.push_back(
+      Token(token, Token::TokenType::Char, this->reader->pos()));
   this->reader->ahead();
 }
 
@@ -324,6 +390,14 @@ void Lex::parse() {
       this->reader->ahead();
       break;
     }
+    case '\'': {
+      this->parse_char();
+      break;
+    }
+    case '"': {
+      this->parse_string();
+      break;
+    }
     default: {
       if (std::isdigit(this->reader->peek())) {
         this->parse_number();
@@ -339,9 +413,9 @@ void Lex::parse() {
       if (this->reader->peek() == '\0' && this->reader->is_eof()) {
         return;
       }
-      PLOGI << this->tokens[this->tokens.size() - 1];
       // spdlog::info("{}", this->tokens[this->tokens.size() - 1]);
     }
     }
+    PLOGI << this->tokens[this->tokens.size() - 1];
   }
 }

@@ -105,6 +105,8 @@ public:
   char *as_string() const;
   char *as_char() const;
 
+  TokenType type() const;
+
   Position p_token;
 
 private:

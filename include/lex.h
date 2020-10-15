@@ -1,6 +1,7 @@
 #pragma once
 #include "reader.h"
 #include "type.h"
+#include <map>
 #include <memory>
 #include <tsl/htrie_map.h>
 #include <vector>
@@ -28,9 +29,11 @@ class Lex {
 public:
   Lex(const char *path);
 
+  // 解析并输出数据
   void parse();
 
-  void print();
+  // 统计并综合数据
+  void report();
 
 private:
   std::unique_ptr<Reader> reader;

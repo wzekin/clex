@@ -4,7 +4,7 @@
 
 Reader::Reader(const char *path)
     : index(0), front_index(1), p_index(Position{1, 1}),
-      p_front_index(Position{1, 2}) {
+      p_front_index(Position{1, 2}), count_(0) {
   this->file = std::ifstream(path);
   memset(this->buffer, 0, 2 * READER_BUFFER);
   this->read_buffer(buffer);
@@ -18,6 +18,7 @@ void Reader::ahead() {
 }
 
 void Reader::front_ahead() {
+  this->count_++;
   this->front_index = (this->front_index + 1) % (READER_BUFFER * 2);
   if (this->front_index == 0) {
     this->read_buffer(this->buffer);
@@ -45,3 +46,5 @@ void Reader::read_buffer(char *buffer) {
 }
 
 Position Reader::pos() const { return this->p_index; }
+
+size_t Reader::count() const { return this->count_; }

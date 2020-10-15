@@ -58,10 +58,13 @@ void Lex::parse_number() {
   //     ")"
   //     "(ul|lu|l|u)?$"
 
+  // ^(\-|\+)?(0|((\d*.\d+)|(\d+.\d*))(e(\+|\-)?\d+)?|[1-9]\d*|0[1-7][0-7]*|0x[1-9a-f][0-9a-f]*|0x([1-9a-f][0-9a-f]*.[0-9a-f]*|[0-9a-f]*.[1-9a-f][0-9a-f]*)p(\+|\-)?[0-9a-f]+)(ul|lu|l|u)?$
+
   std::regex re(
-      "^(\\-|\\+)?(0|((\\d*.\\d+)|(\\d+.\\d*))(e(\\+|\\-)?\\d+)?|[1-9]\\d*|0[1-"
-      "7][0-7]*|0x[1-9a-f][0-9a-f]*|0x([1-9a-f][0-9a-f]*.[0-9a-f]*|["
-      "0-9a-f]*.[1-9a-f][0-9a-f]*)p(\\+|\\-)?[0-9a-f]+)(ul|lu|l|u)?$");
+      "^(\\-|\\+)?(0|(((\\d*\\.\\d+)|(\\d+\\.\\d*))(e(\\+|\\-)?\\d+)?)|([1-9]"
+      "\\d*)|(0[1-"
+      "7][0-7]*)|(0x[1-9a-f][0-9a-f]*)|(0x([1-9a-f][0-9a-f]*\\.[0-9a-f]*|["
+      "0-9a-f]*\\.[1-9a-f][0-9a-f]*)p(\\+|\\-)?[0-9a-f]+))(ul|lu|l|u)?$");
   if (!std::regex_match(token, re)) {
     PLOGW << "the number " << token << " is not correct";
   }
@@ -152,6 +155,9 @@ void Lex::parse_char() {
 
 void Lex::parse() {
   while (true) {
+    if (this->reader->peek() == '\0' && this->reader->is_eof()) {
+      return;
+    }
     switch (this->reader->peek()) {
     case '+': {
       if (this->reader->front_peek() == '+') {
@@ -205,8 +211,10 @@ void Lex::parse() {
     case '/': {
       if (this->reader->front_peek() == '/') {
         this->parse_macro_or_line_comment();
+        continue;
       } else if (this->reader->front_peek() == '*') {
         this->parse_block_comment();
+        continue;
       } else if (this->reader->front_peek() == '=') {
         this->tokens.push_back(Token(OpType::DIV_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
@@ -333,7 +341,7 @@ void Lex::parse() {
     }
     case '#': {
       this->parse_macro_or_line_comment();
-      break;
+      continue;
     }
     case '?': {
       this->tokens.push_back(Token(OpType::QUESTION, this->reader->pos()));
@@ -405,17 +413,62 @@ void Lex::parse() {
         this->parse_ident();
       } else {
         this->reader->ahead();
-        if (this->reader->peek() == '\0' && this->reader->is_eof()) {
-          return;
-        }
         continue;
       }
-      if (this->reader->peek() == '\0' && this->reader->is_eof()) {
-        return;
-      }
-      // spdlog::info("{}", this->tokens[this->tokens.size() - 1]);
+      // spdlog::info("{}",
     }
     }
     PLOGI << this->tokens[this->tokens.size() - 1];
   }
+}
+
+void Lex::report() {
+  // for (auto it : this->tokens) {
+  //   PLOGI << it;
+  // }
+
+  Position pos = this->reader->pos();
+  PLOGI << "语句行数: " << pos.row;
+  PLOGI << "字符总数: " << this->reader->count();
+  size_t op = 0;
+  size_t reserved = 0;
+  size_t ident = 0;
+  size_t number = 0;
+  size_t string = 0;
+  size_t char_ = 0;
+  for (auto it : this->tokens) {
+    switch (it.type()) {
+    case Token::TokenType::OP: {
+      op++;
+      break;
+    }
+    case Token::TokenType::ReservedWord: {
+      reserved++;
+      break;
+    }
+    case Token::TokenType::Ident: {
+      ident++;
+      break;
+    }
+    case Token::TokenType::Number: {
+      number++;
+      break;
+    }
+    case Token::TokenType::String: {
+      string++;
+      break;
+    }
+    case Token::TokenType::Char: {
+      char_++;
+      break;
+    }
+    }
+  }
+  PLOGI << "Token个数: " << this->tokens.size();
+  PLOGI << "其中OP个数: " << op;
+  PLOGI << "其中RESERVED个数: " << reserved;
+  PLOGI << "其中IDENT个数: " << ident;
+  PLOGI << "其中NUMBER个数: " << number;
+  PLOGI << "其中STRING个数: " << string;
+  PLOGI << "其中CHAR个数: " << char_;
 }

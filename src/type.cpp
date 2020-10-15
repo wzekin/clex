@@ -183,3 +183,5 @@ Record &operator<<(Record &record, const Token &t) {
   return record;
 }
 } // namespace plog
+
+Token::TokenType Token::type() const { return this->token_type; }

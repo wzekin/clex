@@ -24,5 +24,6 @@ int main() {
 
   Lex lex = Lex("1.c");
   lex.parse();
+  lex.report();
   return 0;
 }

@@ -47,6 +47,11 @@ public:
    */
   Position pos() const;
 
+  /**
+   * 字符总数
+   */
+  size_t count() const;
+
 private:
   std::ifstream file;
   char buffer[READER_BUFFER * 2];
@@ -58,4 +63,6 @@ private:
   Position p_front_index;
 
   void read_buffer(char *buffer);
+
+  size_t count_;
 };

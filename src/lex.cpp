@@ -462,6 +462,9 @@ void Lex::report() {
       char_++;
       break;
     }
+    case Token::TokenType::Null: {
+      break;
+    }
     }
   }
   PLOGI << "Token个数: " << this->tokens.size();

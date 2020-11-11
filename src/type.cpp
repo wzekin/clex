@@ -31,6 +31,8 @@ bool Token::is_string() const { return this->token_type == TokenType::String; }
 
 bool Token::is_char() const { return this->token_type == TokenType::Char; }
 
+bool Token::is_null() const { return this->token_type == TokenType::Null; }
+
 OpType Token::as_op() const {
   if (!this->is_op()) {
     throw "the token is not op";

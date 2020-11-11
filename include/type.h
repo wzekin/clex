@@ -85,11 +85,13 @@ public:
     Number,
     String,
     Char,
+    Null,
   };
 
-  Token(OpType op_type, Position pos);
-  Token(ReservedWordType reserved_word, Position pos);
-  Token(char *data, Token::TokenType type, Position pos);
+  Token() {}
+  Token(OpType op_type, Position pos = Position{});
+  Token(ReservedWordType reserved_word, Position pos = Position{});
+  Token(char *data, Token::TokenType type, Position pos = Position{});
 
   bool is_op() const;
   bool is_reserved_word() const;
@@ -97,6 +99,7 @@ public:
   bool is_number() const;
   bool is_string() const;
   bool is_char() const;
+  bool is_null() const;
 
   OpType as_op() const;
   ReservedWordType as_reserved_word() const;
@@ -108,6 +111,26 @@ public:
   TokenType type() const;
 
   Position p_token;
+
+  inline bool operator==(const Token &other) const {
+    if (this->is_op() && other.is_op()) {
+      return this->as_op() == other.as_op();
+    } else if (this->is_reserved_word() && other.is_reserved_word()) {
+      return this->as_reserved_word() == other.as_reserved_word();
+    } else {
+      return this->token_type == other.token_type;
+    }
+  }
+
+  inline bool operator<(const Token &other) const {
+    if (this->is_op() && other.is_op()) {
+      return this->as_op() < other.as_op();
+    } else if (this->is_reserved_word() && other.is_reserved_word()) {
+      return this->as_reserved_word() < other.as_reserved_word();
+    } else {
+      return this->token_type < other.token_type;
+    }
+  }
 
 private:
   union TokenValue {

@@ -20,16 +20,10 @@ option(ENABLE_LTO "Enable link time optimization" ON)
 
 # Include stuff. No change needed.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-include(ConfigSafeGuards)
+include("clex.cmake")
 include(Colors)
-include(CTest)
-include(Doctest)
-include(HatTrie)
-include(GLog)
-include(Documentation)
 include(LTO)
 include(Misc)
-include(Warnings)
 
 # Check for LTO support.
 find_lto(CXX)
@@ -37,30 +31,6 @@ find_lto(CXX)
 # --------------------------------------------------------------------------------
 #                         Locate files (change as needed).
 # --------------------------------------------------------------------------------
-set(SOURCES          # All .cpp files in src/
-    src/reader.cpp
-    src/type.cpp
-    src/lex.cpp
-)
-set(LIBRARY_NAME engine)  # Default name for the library built from src/*.cpp (change if you wish)
-
-# --------------------------------------------------------------------------------
-#                            Build! (Change as needed)
-# --------------------------------------------------------------------------------
-# Compile all sources into a library.
-add_library(${LIBRARY_NAME} OBJECT ${SOURCES})
-
-# Lib needs its header files, and users of the library must also see these (PUBLIC). (No change needed)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-# There's also (probably) doctests within the library, so we need to see this as well.
-target_link_libraries(${LIBRARY_NAME} PUBLIC hat-trie)
-target_link_libraries(${LIBRARY_NAME} PUBLIC glog)
-
-# Set the compile options you want (change as needed).
-target_set_warnings(${LIBRARY_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)
-# target_compile_options(${LIBRARY_NAME} ... )  # For setting manually.
-
 # Add an executable for the file app/main.cpp.
 # If you add more executables, copy these lines accordingly.
 add_executable(main app/main.cpp)   # Name of exec. and location of file.

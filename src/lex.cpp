@@ -32,7 +32,7 @@ void Lex::parse_ident() {
     this->tokens.push_back(Token(res.value(), this->reader->pos()));
   } else {
     this->tokens.push_back(
-        Token(token, Token::TokenType::Ident, this->reader->pos()));
+        Token(Token::TokenType::Ident, token, this->reader->pos()));
   }
   this->reader->ahead();
 }
@@ -69,7 +69,7 @@ void Lex::parse_number() {
     PLOGW << "the number " << token << " is not correct";
   }
   this->tokens.push_back(
-      Token(token, Token::TokenType::Number, this->reader->pos()));
+      Token(Token::TokenType::Number, token, this->reader->pos()));
   this->reader->ahead();
   return;
 }
@@ -119,7 +119,7 @@ void Lex::parse_string() {
     this->reader->front_ahead();
   }
   this->tokens.push_back(
-      Token(token, Token::TokenType::String, this->reader->pos()));
+      Token(Token::TokenType::String, token, this->reader->pos()));
   this->reader->ahead();
 }
 
@@ -149,7 +149,7 @@ void Lex::parse_char() {
     PLOGW << "the char" << token << " has not right length";
   }
   this->tokens.push_back(
-      Token(token, Token::TokenType::Char, this->reader->pos()));
+      Token(Token::TokenType::Char, token, this->reader->pos()));
   this->reader->ahead();
 }
 

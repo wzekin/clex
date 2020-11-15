@@ -5,7 +5,8 @@
 #include <plog/Log.h>
 #include <string>
 
-enum class OpType {
+enum class OpType
+{
   ASSIGN,     // 赋值
   ADD,        //加法
   INC,        //自增
@@ -56,7 +57,8 @@ enum class OpType {
   R_PAREN,
 };
 
-enum class ReservedWordType {
+enum class ReservedWordType
+{
   CHAR,
   UNSIGNED,
   UNION,
@@ -76,9 +78,11 @@ enum class ReservedWordType {
   STRUCT,
 };
 
-class Token {
+class Token
+{
 public:
-  enum class TokenType {
+  enum class TokenType
+  {
     OP,
     ReservedWord,
     Ident,
@@ -91,7 +95,7 @@ public:
   Token() {}
   Token(OpType op_type, Position pos = Position{});
   Token(ReservedWordType reserved_word, Position pos = Position{});
-  Token(char *data, Token::TokenType type, Position pos = Position{});
+  Token(Token::TokenType type, char *data = NULL, Position pos = Position{});
 
   bool is_op() const;
   bool is_reserved_word() const;
@@ -112,28 +116,41 @@ public:
 
   Position p_token;
 
-  inline bool operator==(const Token &other) const {
-    if (this->is_op() && other.is_op()) {
+  inline bool operator==(const Token &other) const
+  {
+    if (this->is_op() && other.is_op())
+    {
       return this->as_op() == other.as_op();
-    } else if (this->is_reserved_word() && other.is_reserved_word()) {
+    }
+    else if (this->is_reserved_word() && other.is_reserved_word())
+    {
       return this->as_reserved_word() == other.as_reserved_word();
-    } else {
+    }
+    else
+    {
       return this->token_type == other.token_type;
     }
   }
 
-  inline bool operator<(const Token &other) const {
-    if (this->is_op() && other.is_op()) {
+  inline bool operator<(const Token &other) const
+  {
+    if (this->is_op() && other.is_op())
+    {
       return this->as_op() < other.as_op();
-    } else if (this->is_reserved_word() && other.is_reserved_word()) {
+    }
+    else if (this->is_reserved_word() && other.is_reserved_word())
+    {
       return this->as_reserved_word() < other.as_reserved_word();
-    } else {
+    }
+    else
+    {
       return this->token_type < other.token_type;
     }
   }
 
 private:
-  union TokenValue {
+  union TokenValue
+  {
     OpType op_type;
     ReservedWordType reserved_word;
     char *data;

@@ -14,6 +14,7 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 #include "reader.h"
 #include "type.h"
+#include <fmt/core.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Log.h>
 #include <tsl/htrie_set.h>
@@ -21,9 +22,11 @@
 int main() {
   static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
   plog::init(plog::debug, &consoleAppender); // Step2: initialize the logger
+  std::cout << fmt::format("the token is {:d}", Token(OpType::ADD))
+            << std::endl;
 
-  Lex lex = Lex("1.c");
-  lex.parse();
-  lex.report();
+  // Lex lex = Lex("1.c");
+  // lex.parse();
+  // lex.report();
   return 0;
 }

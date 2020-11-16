@@ -2,6 +2,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/")
 include(HatTrie)
 include(GLog)
 include(Warnings)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/external/fmt" EXCLUDE_FROM_ALL)
 set(SOURCES          # All .cpp files in src/
    ${CMAKE_CURRENT_LIST_DIR}/src/reader.cpp
    ${CMAKE_CURRENT_LIST_DIR}/src/type.cpp
@@ -21,6 +22,8 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/incl
 # There's also (probably) doctests within the library, so we need to see this as well.
 target_link_libraries(${LIBRARY_NAME} PUBLIC hat-trie)
 target_link_libraries(${LIBRARY_NAME} PUBLIC glog)
+target_link_libraries(${LIBRARY_NAME} PUBLIC fmt::fmt)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/fmt/include)
 
 # Set the compile options you want (change as needed).
 target_set_warnings(${LIBRARY_NAME} ENABLE ALL AS_ERROR ALL DISABLE Annoying)

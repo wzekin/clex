@@ -1,12 +1,13 @@
 #pragma once
 #include "reader.h"
+#include <fmt/core.h>
+#include <fmt/format.h>
 #include <iostream>
 #include <plog/Initializers/RollingFileInitializer.h>
 #include <plog/Log.h>
 #include <string>
 
-enum class OpType
-{
+enum class OpType {
   ASSIGN,     // 赋值
   ADD,        //加法
   INC,        //自增
@@ -57,8 +58,7 @@ enum class OpType
   R_PAREN,
 };
 
-enum class ReservedWordType
-{
+enum class ReservedWordType {
   CHAR,
   UNSIGNED,
   UNION,
@@ -78,11 +78,9 @@ enum class ReservedWordType
   STRUCT,
 };
 
-class Token
-{
+class Token {
 public:
-  enum class TokenType
-  {
+  enum class TokenType {
     OP,
     ReservedWord,
     Ident,
@@ -116,41 +114,28 @@ public:
 
   Position p_token;
 
-  inline bool operator==(const Token &other) const
-  {
-    if (this->is_op() && other.is_op())
-    {
+  inline bool operator==(const Token &other) const {
+    if (this->is_op() && other.is_op()) {
       return this->as_op() == other.as_op();
-    }
-    else if (this->is_reserved_word() && other.is_reserved_word())
-    {
+    } else if (this->is_reserved_word() && other.is_reserved_word()) {
       return this->as_reserved_word() == other.as_reserved_word();
-    }
-    else
-    {
+    } else {
       return this->token_type == other.token_type;
     }
   }
 
-  inline bool operator<(const Token &other) const
-  {
-    if (this->is_op() && other.is_op())
-    {
+  inline bool operator<(const Token &other) const {
+    if (this->is_op() && other.is_op()) {
       return this->as_op() < other.as_op();
-    }
-    else if (this->is_reserved_word() && other.is_reserved_word())
-    {
+    } else if (this->is_reserved_word() && other.is_reserved_word()) {
       return this->as_reserved_word() < other.as_reserved_word();
-    }
-    else
-    {
+    } else {
       return this->token_type < other.token_type;
     }
   }
 
 private:
-  union TokenValue
-  {
+  union TokenValue {
     OpType op_type;
     ReservedWordType reserved_word;
     char *data;
@@ -166,3 +151,166 @@ Record &operator<<(Record &record, const OpType &o);
 Record &operator<<(Record &record, const ReservedWordType &r);
 Record &operator<<(Record &record, const Token &t);
 } // namespace plog
+
+template <> struct fmt::formatter<OpType> : formatter<string_view> {
+  bool is_details = false;
+  constexpr auto parse(format_parse_context &ctx) {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && (*it == 'd')) {
+      it++;
+      is_details = true;
+    }
+    if (it != end && *it != '}')
+      throw format_error("invalid format");
+    return it;
+  }
+  template <typename FormatContext>
+  auto format(const OpType &p, FormatContext &ctx) {
+    string_view s = "unknown";
+#define PROCESS_VAL(p, name, details)                                          \
+  case (p):                                                                    \
+    s = is_details ? fmt::format("{} '{}'", details, name) : name;             \
+    break;
+    switch (p) {
+      PROCESS_VAL(OpType::ASSIGN, "=", "ASSIGN ");
+      PROCESS_VAL(OpType::ADD, "+", "ADD ");
+      PROCESS_VAL(OpType::INC, "++", "INC ");
+      PROCESS_VAL(OpType::ADD_ASSIGN, "+=", "ADD_ASSIGN ");
+      PROCESS_VAL(OpType::SUB, "-", "SUB ");
+      PROCESS_VAL(OpType::DEC, "--", "DEC ");
+      PROCESS_VAL(OpType::SUB_ASSIGN, "-=", "SUB_ASSIGN ");
+      PROCESS_VAL(OpType::MUL_ASSIGN, "*=", "MUL_ASSIGN ");
+      PROCESS_VAL(OpType::DIV, "/", "DIV ");
+      PROCESS_VAL(OpType::DIV_ASSIGN, "/=", "DIV_ASSIGN ");
+      PROCESS_VAL(OpType::MOD, "%", "MOD ");
+      PROCESS_VAL(OpType::MOD_ASSIGN, "%=", "MOD_ASSIGN ");
+      PROCESS_VAL(OpType::BITWISE_AND_ASSIGN, "&=", "BITWISE_AND_ASSIGN ");
+      PROCESS_VAL(OpType::BITWISE_OR, "|", "BITWISE_OR ");
+      PROCESS_VAL(OpType::BITWISE_OR_ASSIGN, "|=", "BITWISE_OR_ASSIGN ");
+      PROCESS_VAL(OpType::BITWISE_XOR, "^", "BITWISE_XOR ");
+      PROCESS_VAL(OpType::BITWISE_XOR_ASSIGN, "^=", "BITWISE_XOR_ASSIGN ");
+      PROCESS_VAL(OpType::BITWISE_NOT, "~", "BITWISE_NOT ");
+      PROCESS_VAL(OpType::AND, "&&", "AND ");
+      PROCESS_VAL(OpType::AND_ASSIGN, "&&=", "AND_ASSIGN ");
+      PROCESS_VAL(OpType::OR, "||", "OR ");
+      PROCESS_VAL(OpType::OR_ASSIGN, "||=", "OR_ASSIGN ");
+      PROCESS_VAL(OpType::NOT, "!", "NOT ");
+      PROCESS_VAL(OpType::SHL, "<<", "SHL ");
+      PROCESS_VAL(OpType::SHL_ASSIGN, "<<=", "SHL_ASSIGN ");
+      PROCESS_VAL(OpType::SHR, ">>", "SHR ");
+      PROCESS_VAL(OpType::SHR_ASSIGN, ">>=", "SHR_ASSIGN ");
+      PROCESS_VAL(OpType::LESS, "<", "LESS ");
+      PROCESS_VAL(OpType::LESS_EQUAL, "<=", "LESS_EQUAL ");
+      PROCESS_VAL(OpType::EQUAL, "==", "EQUAL ");
+      PROCESS_VAL(OpType::INEQUAL, "!=", "INEQUAL ");
+      PROCESS_VAL(OpType::GREATER, ">", "GREATER ");
+      PROCESS_VAL(OpType::GREATER_EQUAL, ">=", "GREATER_EQUAL ");
+      PROCESS_VAL(OpType::CONCAT, "##", "CONCAT ");
+      PROCESS_VAL(OpType::ASTERISK, "*", "ASTERISK ");
+      PROCESS_VAL(OpType::AMPERSAND, "&", "AMPERSAND ");
+      PROCESS_VAL(OpType::QUESTION, "?", "QUESTION ");
+      PROCESS_VAL(OpType::COMMA, ",", "COMMA ");
+      PROCESS_VAL(OpType::COLON, ":", "COLON ");
+      PROCESS_VAL(OpType::SEMICOLON, ";", "SEMICOLON ");
+      PROCESS_VAL(OpType::DOT, ".", "DOT ");
+      PROCESS_VAL(OpType::ARROW, "->", "ARROW ");
+      PROCESS_VAL(OpType::L_BRACE, "{", "L_BRACE ");
+      PROCESS_VAL(OpType::R_BRACE, "}", "R_BRACE ");
+      PROCESS_VAL(OpType::L_SQUARE, "[", "L_SQUARE ");
+      PROCESS_VAL(OpType::R_SQUARE, "]", "R_SQUARE ");
+      PROCESS_VAL(OpType::L_PAREN, "(", "L_PAREN ");
+      PROCESS_VAL(OpType::R_PAREN, ")", "R_PAREN ");
+    }
+#undef PROCESS_VAL
+    return formatter<string_view>::format(s, ctx);
+  }
+};
+
+template <> struct fmt::formatter<ReservedWordType> : formatter<string_view> {
+  template <typename FormatContext>
+  auto format(const ReservedWordType &p, FormatContext &ctx) {
+    string_view s = "unknown";
+#define PROCESS_VAL(p, name)                                                   \
+  case (p):                                                                    \
+    s = name;                                                                  \
+    break;
+    switch (p) {
+      PROCESS_VAL(ReservedWordType::CHAR, "char");
+      PROCESS_VAL(ReservedWordType::UNSIGNED, "unsigned");
+      PROCESS_VAL(ReservedWordType::UNION, "union");
+      PROCESS_VAL(ReservedWordType::INT, "int");
+      PROCESS_VAL(ReservedWordType::SIGNER, "signer");
+      PROCESS_VAL(ReservedWordType::TYPEDEF, "typedef");
+      PROCESS_VAL(ReservedWordType::LONG, "long");
+      PROCESS_VAL(ReservedWordType::CONST, "const");
+      PROCESS_VAL(ReservedWordType::SIZEOF, "sizeof");
+      PROCESS_VAL(ReservedWordType::FLOAT, "float");
+      PROCESS_VAL(ReservedWordType::STATIC, "static");
+      PROCESS_VAL(ReservedWordType::IF, "if");
+      PROCESS_VAL(ReservedWordType::DOUBLE, "double");
+      PROCESS_VAL(ReservedWordType::EXTERN, "extern");
+      PROCESS_VAL(ReservedWordType::ELSE, "else");
+      PROCESS_VAL(ReservedWordType::VOID, "void");
+      PROCESS_VAL(ReservedWordType::STRUCT, "struct");
+    }
+#undef PROCESS_VAL
+    return formatter<string_view>::format(s, ctx);
+  }
+};
+
+template <> struct fmt::formatter<Token> {
+  bool is_details = false;
+  constexpr auto parse(format_parse_context &ctx) {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && (*it == 'd')) {
+      it++;
+      is_details = true;
+    }
+    if (it != end && *it != '}')
+      throw format_error("invalid format");
+    return it;
+  }
+
+  template <typename FormatContext>
+  auto format(const Token &t, FormatContext &ctx) {
+    // return format_to(ctx.out(),
+    //                  presentation == 'f' ? "({:.1f}, {:.1f})"
+    //                                      : "({:.1e}, {:.1e})",
+    //                  p.x, p.y);
+    if (is_details) {
+      if (t.is_op()) {
+        return format_to(ctx.out(), "<OP>\t{:d}\tLoc=<{}:{}>", t.as_op(),
+                         t.p_token.row, t.p_token.col);
+      } else if (t.is_reserved_word()) {
+        return format_to(ctx.out(), "<RESERVED>\t{}\tLoc=<{}:{}>",
+                         t.as_reserved_word(), t.p_token.row, t.p_token.col);
+      } else if (t.is_ident()) {
+        return format_to(ctx.out(), "<IDENT>\t{}\tLoc=<{}:{}>", t.as_ident(),
+                         t.p_token.row, t.p_token.col);
+      } else if (t.is_number()) {
+        return format_to(ctx.out(), "<NUMBER>\t{}\tLoc=<{}:{}>", t.as_number(),
+                         t.p_token.row, t.p_token.col);
+      } else if (t.is_string()) {
+        return format_to(ctx.out(), "<STRING>\t{}\tLoc=<{}:{}>", t.as_string(),
+                         t.p_token.row, t.p_token.col);
+      } else {
+        return format_to(ctx.out(), "<CHAR>\t{}\tLoc=<{}:{}>", t.as_char(),
+                         t.p_token.row, t.p_token.col);
+      }
+    } else {
+      if (t.is_op()) {
+        return format_to(ctx.out(), "{}", t.as_op());
+      } else if (t.is_reserved_word()) {
+        return format_to(ctx.out(), "{}", t.as_reserved_word());
+      } else if (t.is_ident()) {
+        return format_to(ctx.out(), "{}", t.as_ident());
+      } else if (t.is_number()) {
+        return format_to(ctx.out(), "{}", t.as_number());
+      } else if (t.is_string()) {
+        return format_to(ctx.out(), "{}", t.as_string());
+      } else {
+        return format_to(ctx.out(), "{}", t.as_char());
+      }
+    }
+  }
+};

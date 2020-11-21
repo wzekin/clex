@@ -35,10 +35,12 @@ public:
   // 统计并综合数据
   void report();
 
+  std::vector<Token> const &tokens() const;
+
 private:
   std::unique_ptr<Reader> reader;
 
-  std::vector<Token> tokens;
+  std::vector<Token> _tokens;
 
   void parse_ident();
 

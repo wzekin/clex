@@ -303,13 +303,15 @@ template <> struct fmt::formatter<Token> {
       } else if (t.is_reserved_word()) {
         return format_to(ctx.out(), "{}", t.as_reserved_word());
       } else if (t.is_ident()) {
-        return format_to(ctx.out(), "{}", t.as_ident());
+        return format_to(ctx.out(), "<id>");
       } else if (t.is_number()) {
-        return format_to(ctx.out(), "{}", t.as_number());
+        return format_to(ctx.out(), "<num>");
       } else if (t.is_string()) {
-        return format_to(ctx.out(), "{}", t.as_string());
+        return format_to(ctx.out(), "<str>");
+      } else if (t.is_char()) {
+        return format_to(ctx.out(), "<char>");
       } else {
-        return format_to(ctx.out(), "{}", t.as_char());
+        throw "invalid token";
       }
     }
   }

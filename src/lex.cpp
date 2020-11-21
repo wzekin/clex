@@ -29,9 +29,9 @@ void Lex::parse_ident() {
   }
   auto res = reserved_word.find(token);
   if (res != reserved_word.end()) {
-    this->tokens.push_back(Token(res.value(), this->reader->pos()));
+    this->_tokens.push_back(Token(res.value(), this->reader->pos()));
   } else {
-    this->tokens.push_back(
+    this->_tokens.push_back(
         Token(Token::TokenType::Ident, token, this->reader->pos()));
   }
   this->reader->ahead();
@@ -68,7 +68,7 @@ void Lex::parse_number() {
   if (!std::regex_match(token, re)) {
     PLOGW << "the number " << token << " is not correct";
   }
-  this->tokens.push_back(
+  this->_tokens.push_back(
       Token(Token::TokenType::Number, token, this->reader->pos()));
   this->reader->ahead();
   return;
@@ -118,7 +118,7 @@ void Lex::parse_string() {
     token[index++] = this->reader->front_peek();
     this->reader->front_ahead();
   }
-  this->tokens.push_back(
+  this->_tokens.push_back(
       Token(Token::TokenType::String, token, this->reader->pos()));
   this->reader->ahead();
 }
@@ -148,7 +148,7 @@ void Lex::parse_char() {
       std::strlen(token) != 3) {
     PLOGW << "the char" << token << " has not right length";
   }
-  this->tokens.push_back(
+  this->_tokens.push_back(
       Token(Token::TokenType::Char, token, this->reader->pos()));
   this->reader->ahead();
 }
@@ -161,49 +161,49 @@ void Lex::parse() {
     switch (this->reader->peek()) {
     case '+': {
       if (this->reader->front_peek() == '+') {
-        this->tokens.push_back(Token(OpType::INC, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::INC, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::ADD_ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::ADD_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::ADD, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::ADD, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '=': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::EQUAL, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::EQUAL, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::ASSIGN, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '-': {
       if (this->reader->front_peek() == '-') {
-        this->tokens.push_back(Token(OpType::DEC, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::DEC, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '>') {
-        this->tokens.push_back(Token(OpType::ARROW, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::ARROW, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::SUB_ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::SUB_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::SUB, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::SUB, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '*': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::MUL_ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::MUL_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::ASTERISK, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::ASTERISK, this->reader->pos()));
       }
       this->reader->ahead();
       break;
@@ -216,125 +216,127 @@ void Lex::parse() {
         this->parse_block_comment();
         continue;
       } else if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::DIV_ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::DIV_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
         this->reader->ahead();
       } else {
-        this->tokens.push_back(Token(OpType::DIV, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::DIV, this->reader->pos()));
         this->reader->ahead();
       }
       break;
     }
     case '%': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::MOD_ASSIGN, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::MOD_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::MOD, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::MOD, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '&': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(
+        this->_tokens.push_back(
             Token(OpType::BITWISE_AND_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '&') {
         this->reader->front_ahead();
         if (this->reader->front_peek() == '=') {
           this->reader->front_ahead();
-          this->tokens.push_back(
+          this->_tokens.push_back(
               Token(OpType::AND_ASSIGN, this->reader->pos()));
         } else {
-          this->tokens.push_back(Token(OpType::AND, this->reader->pos()));
+          this->_tokens.push_back(Token(OpType::AND, this->reader->pos()));
         }
       } else {
-        this->tokens.push_back(Token(OpType::AMPERSAND, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::AMPERSAND, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '|': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(
+        this->_tokens.push_back(
             Token(OpType::BITWISE_OR_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '|') {
         this->reader->front_ahead();
         if (this->reader->front_peek() == '=') {
           this->reader->front_ahead();
-          this->tokens.push_back(Token(OpType::OR_ASSIGN, this->reader->pos()));
+          this->_tokens.push_back(
+              Token(OpType::OR_ASSIGN, this->reader->pos()));
         } else {
-          this->tokens.push_back(Token(OpType::OR, this->reader->pos()));
+          this->_tokens.push_back(Token(OpType::OR, this->reader->pos()));
         }
       } else {
-        this->tokens.push_back(Token(OpType::BITWISE_OR, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::BITWISE_OR, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '^': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(
+        this->_tokens.push_back(
             Token(OpType::BITWISE_XOR_ASSIGN, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::BITWISE_XOR, this->reader->pos()));
+        this->_tokens.push_back(
+            Token(OpType::BITWISE_XOR, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '~': {
-      this->tokens.push_back(Token(OpType::BITWISE_NOT, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::BITWISE_NOT, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '!': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::INEQUAL, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::INEQUAL, this->reader->pos()));
         this->reader->front_ahead();
       } else {
-        this->tokens.push_back(Token(OpType::NOT, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::NOT, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '<': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(Token(OpType::LESS_EQUAL, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::LESS_EQUAL, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '<') {
         this->reader->front_ahead();
         if (this->reader->front_peek() == '=') {
           this->reader->front_ahead();
-          this->tokens.push_back(
+          this->_tokens.push_back(
               Token(OpType::SHL_ASSIGN, this->reader->pos()));
         } else {
-          this->tokens.push_back(Token(OpType::SHL, this->reader->pos()));
+          this->_tokens.push_back(Token(OpType::SHL, this->reader->pos()));
         }
       } else {
-        this->tokens.push_back(Token(OpType::LESS, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::LESS, this->reader->pos()));
       }
       this->reader->ahead();
       break;
     }
     case '>': {
       if (this->reader->front_peek() == '=') {
-        this->tokens.push_back(
+        this->_tokens.push_back(
             Token(OpType::GREATER_EQUAL, this->reader->pos()));
         this->reader->front_ahead();
       } else if (this->reader->front_peek() == '<') {
         this->reader->front_ahead();
         if (this->reader->front_peek() == '=') {
           this->reader->front_ahead();
-          this->tokens.push_back(
+          this->_tokens.push_back(
               Token(OpType::SHR_ASSIGN, this->reader->pos()));
         } else {
-          this->tokens.push_back(Token(OpType::SHR, this->reader->pos()));
+          this->_tokens.push_back(Token(OpType::SHR, this->reader->pos()));
         }
       } else {
-        this->tokens.push_back(Token(OpType::GREATER, this->reader->pos()));
+        this->_tokens.push_back(Token(OpType::GREATER, this->reader->pos()));
       }
       this->reader->ahead();
       break;
@@ -344,57 +346,57 @@ void Lex::parse() {
       continue;
     }
     case '?': {
-      this->tokens.push_back(Token(OpType::QUESTION, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::QUESTION, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case ',': {
-      this->tokens.push_back(Token(OpType::COMMA, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::COMMA, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case ':': {
-      this->tokens.push_back(Token(OpType::COLON, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::COLON, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case ';': {
-      this->tokens.push_back(Token(OpType::SEMICOLON, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::SEMICOLON, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '.': {
-      this->tokens.push_back(Token(OpType::DOT, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::DOT, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '{': {
-      this->tokens.push_back(Token(OpType::L_BRACE, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::L_BRACE, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '}': {
-      this->tokens.push_back(Token(OpType::R_BRACE, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::R_BRACE, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '[': {
-      this->tokens.push_back(Token(OpType::L_SQUARE, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::L_SQUARE, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case ']': {
-      this->tokens.push_back(Token(OpType::R_SQUARE, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::R_SQUARE, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case '(': {
-      this->tokens.push_back(Token(OpType::L_PAREN, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::L_PAREN, this->reader->pos()));
       this->reader->ahead();
       break;
     }
     case ')': {
-      this->tokens.push_back(Token(OpType::R_PAREN, this->reader->pos()));
+      this->_tokens.push_back(Token(OpType::R_PAREN, this->reader->pos()));
       this->reader->ahead();
       break;
     }
@@ -418,7 +420,7 @@ void Lex::parse() {
       // spdlog::info("{}",
     }
     }
-    PLOGI << this->tokens[this->tokens.size() - 1];
+    PLOGI << this->_tokens[this->_tokens.size() - 1];
   }
 }
 
@@ -436,7 +438,7 @@ void Lex::report() {
   size_t number = 0;
   size_t string = 0;
   size_t char_ = 0;
-  for (auto it : this->tokens) {
+  for (auto it : this->_tokens) {
     switch (it.type()) {
     case Token::TokenType::OP: {
       op++;
@@ -467,7 +469,7 @@ void Lex::report() {
     }
     }
   }
-  PLOGI << "Token个数: " << this->tokens.size();
+  PLOGI << "Token个数: " << this->_tokens.size();
   PLOGI << "其中OP个数: " << op;
   PLOGI << "其中RESERVED个数: " << reserved;
   PLOGI << "其中IDENT个数: " << ident;
@@ -475,3 +477,5 @@ void Lex::report() {
   PLOGI << "其中STRING个数: " << string;
   PLOGI << "其中CHAR个数: " << char_;
 }
+
+std::vector<Token> const &Lex::tokens() const { return this->_tokens; }
